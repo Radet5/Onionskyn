@@ -1,5 +1,5 @@
 const {start}=require('./audit_lib');
-(async()=>{const T=await start();const p=T.page;let bad=0;const ok=(c,m)=>{console.log(c?'ok  ':'FAIL',m);if(!c)bad++;};
+(async()=>{const T=await start();const p=T.page;const ok=T.ok;
 await T.newDoc();await p.keyboard.press('o');await T.drag(80,120,140,180);await p.keyboard.press('v');await T.click(110,150);await p.click('#objConvert');
 await T.st(()=>window.__FC.setTab('lib'));
 await p.locator('#libSyms [data-ld]').click();ok((await T.toast()).includes('still used'),'in-use symbol refused: '+await T.toast());
@@ -8,4 +8,4 @@ await T.st(()=>window.__FC.setTab('lib'));
 await p.locator('#libSyms [data-ld]').click();await p.waitForTimeout(100);
 ok(await T.st(()=>Object.keys(window.__FC.S.doc.lib).length===0),'unused symbol deleted');
 await p.keyboard.press('Control+z');ok(await T.st(()=>Object.keys(window.__FC.S.doc.lib).length===1),'undo restores symbol');
-ok(T.errs.length===0,'no errors '+T.errs);await T.b.close();process.exit(bad?1:0);})();
+await T.finish();})();

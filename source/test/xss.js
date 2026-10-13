@@ -1,7 +1,7 @@
 const {start}=require('./audit_lib');const fs=require('fs');
 const SP=require('os').tmpdir();const FX=__dirname+'/fixtures';
 fs.copyFileSync(FX+'/t.png',SP+'/a<img src=x onerror=window.__x=1>.png');fs.copyFileSync(FX+'/t.wav',SP+'/s<img src=x onerror=window.__x=2>.wav');
-(async()=>{const T=await start();const p=T.page;let bad=0;const ok=(c,m)=>{console.log(c?'ok  ':'FAIL',m);if(!c)bad++;};
+(async()=>{const T=await start();const p=T.page;const ok=T.ok;
 const EVIL='<img src=x onerror=window.__x=3>"\'&</script>';
 await T.newDoc();
 await p.setInputFiles('#imgIn',[SP+'/a<img src=x onerror=window.__x=1>.png']);await p.waitForTimeout(500);
@@ -23,7 +23,6 @@ const doc=new (require('jsdom').JSDOM)(svg,{contentType:'image/svg+xml'}).window
 const html=(await p.evaluate(()=>{const r=window.__FC.buildPlayer({});return typeof r==='string'?r:r.html})); 
 ok(!/<img src=x onerror/i.test(html.replace(/\\u003c/g,'')),'player html has no raw injected tag outside JSON');
 fs.writeFileSync(SP+'/xss.html',html);
-const p2=await T.ctx.newPage();const e2=[];p2.on('pageerror',e=>e2.push(e.message));await p2.goto('file://'+SP+'/xss.html');await p2.waitForTimeout(800);
+const p2=T.watch(await T.ctx.newPage());await p2.goto('file://'+SP+'/xss.html');await p2.waitForFunction(()=>!!window.__rt);
 ok(await p2.evaluate(()=>window.__x===undefined),'player: no script execution');
-ok(T.errs.length===0,'no page errors '+T.errs.join('|'));
-await T.b.close();process.exit(bad?1:0);})();
+await T.finish();})();

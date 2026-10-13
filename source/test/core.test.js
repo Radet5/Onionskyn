@@ -4,7 +4,7 @@ globalThis.DOMParser=new JSDOM('').window.DOMParser; globalThis.JSZip=JSZip;
 // bundle Core from source the same way build.mjs does, so the suite tests src/core/ and not dist/
 eval(require('esbuild').buildSync({entryPoints:[path.join(__dirname,'../src/core/index.js')],bundle:true,write:false,format:'iife',banner:{js:"'use strict';"},target:'esnext',charset:'utf8',logLevel:'warning'}).outputFiles[0].text);
 const C=globalThis.FCCore; let fails=0;
-const ok=(c,m)=>{ if(!c){fails++;console.log('FAIL',m);} else console.log('ok  ',m); };
+const ok=(c,m)=>{ if(!c){fails++;process.exitCode=1;console.log('FAIL',m);} else console.log('ok  ',m); };
 
 // --- the exported API: Runtime and HTML exports depend on this exact key set
 const KEYS=["uid","clamp","lerp","clone","nz","hexToRgb","rgbToHex","lerpHex","rgba","newT","matOf","mmul","minv","mapply","decompose","node","tracePath","pathD","bezPt","splitSeg","contoursBounds","localBounds","worldCorners","worldBounds","recenter","applyMatrixToNodes","setObjMatrix","ellipseContour","rectContour","mkPath","mkLayer","mkKf","mkDoc","normalizeDoc","groupEntries","drawUnits","maskedDraw","groupAlpha","tweenPairs","shapeTweenIssues","ease","bezierEase","morphContours","evalLayerObjs","evalDoc","kfIndexAt","kfAt","kfFor","sortKfs","ensureEditable","insertKeyframe","insertFrames","removeFrames","clearKeyframe","moveKeyframe","setTweenAt","drawObj","hitObj","frameSVG","objSVG","quantize","lzw","gifWriter","parseNum","parseEdges","assembleLoops","importFLA","setImages","preloadImages","setLib","setMeasure","kidsOf","layoutText"];
@@ -113,10 +113,9 @@ fs.writeFileSync(require('os').tmpdir()+'/t.gif',Buffer.from(w.finish()));
 { // bezier easing
   const be=C.bezierEase;
   let ok1=true; for(let i=0;i<=10;i++){const t=i/10; if(Math.abs(be(t,0,0,1,1)-t)>1e-4) ok1=false;}
-  console.log(ok1?'ok  ':'FAIL','bezier linear identity'); if(!ok1) process.exitCode=1;
-  const ok2=be(0.5,0.42,0,1,1)<0.5 && be(0.5,0,0,0.58,1)>0.5 && be(0,0.3,0.2,0.7,0.9)===0 && be(1,0.3,0.2,0.7,0.9)===1;
-  console.log(ok2?'ok  ':'FAIL','bezier in/out sides'); if(!ok2) process.exitCode=1;
+  ok(ok1,'bezier linear identity');
+  ok(be(0.5,0.42,0,1,1)<0.5 && be(0.5,0,0,0.58,1)>0.5 && be(0,0.3,0.2,0.7,0.9)===0 && be(1,0.3,0.2,0.7,0.9)===1,'bezier in/out sides');
   let mx=0; for(let i=0;i<=100;i++) mx=Math.max(mx,be(i/100,0.175,0.885,0.32,1.275));
-  console.log(mx>1.05?'ok  ':'FAIL','bezier back overshoot '+mx.toFixed(3)); if(mx<=1.05) process.exitCode=1;
-  console.log(C.ease('bezier',50,0.5,[0,0,1,1])===0.5||Math.abs(C.ease('bezier',50,0.5,[0,0,1,1])-0.5)<1e-4?'ok  bezier via ease()':'FAIL ease()');
+  ok(mx>1.05,'bezier back overshoot '+mx.toFixed(3));
+  ok(Math.abs(C.ease('bezier',50,0.5,[0,0,1,1])-0.5)<1e-4,'bezier via ease()');
 }

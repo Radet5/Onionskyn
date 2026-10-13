@@ -1,10 +1,6 @@
-const {chromium}=require('playwright');const path=require('path');
-let fails=0;const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++;};
-(async()=>{const b=await chromium.launch();const page=await b.newPage({viewport:{width:1300,height:850}});const errs=[];page.on('pageerror',e=>errs.push(e.message));
-await page.addInitScript(()=>{window.__FC_TEST=true;});
-await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));await page.waitForTimeout(500);
-await page.click('#mFile');await page.click('text=New animation');await page.waitForTimeout(150);
-const dlg=await page.$('#modal .primary');if(dlg){await dlg.click();await page.waitForTimeout(150);}
+const {start}=require('./audit_lib');
+(async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;const ok=T.ok;
+await T.newDoc();
 await page.mouse.click(5,5);
 const box=await page.evaluate(()=>{const r=document.querySelector('#stage').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};});
 const objs=()=>page.evaluate(()=>window.__FC.S.doc.layers.flatMap(l=>l.kfs.flatMap(k=>k.objs)).length);
@@ -63,5 +59,4 @@ const rr=await page.evaluate(()=>{
  return {d,tot,pct:+(d/tot*100).toFixed(3)};});
 console.log(JSON.stringify(rr));
 ok(rr.pct<0.2,'merged contours cover the same pixels as separate strokes: '+rr.pct+'% differ');
-ok(errs.length===0,'no page errors '+errs.join('|'));
-await b.close();console.log(fails?'FAILURES '+fails:'ALL PASS');process.exit(fails?1:0);})();
+await T.finish();})();

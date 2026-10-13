@@ -1,16 +1,7 @@
-const { chromium } = require('playwright');
-const fs=require('fs'); const path=require('path');
-const JSZipSrc=fs.readFileSync(require.resolve('jszip/dist/jszip.min.js'),'utf8');
-let fails=0; const ok=(c,m)=>{ if(!c){fails++;console.log('FAIL',m);} else console.log('ok  ',m); };
+const {start}=require('./audit_lib');
+const fs=require('fs');
 (async()=>{
-  const browser=await chromium.launch();
-  const ctx=await browser.newContext({viewport:{width:1360,height:820},acceptDownloads:true});
-  const page=await ctx.newPage();
-  const errs=[]; page.on('pageerror',e=>errs.push('PAGEERR '+e.message+'\n'+(e.stack||'').split('\n').slice(0,4).join('\n')));
-  await page.route('**/*',route=>{ const u=route.request().url(); if(u.includes('jszip')) return route.fulfill({contentType:'application/javascript',body:JSZipSrc}); if(u.startsWith('file:')) return route.continue(); return route.abort(); });
-  await page.addInitScript(()=>{window.__FC_TEST=true;});
-  await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));
-  await page.evaluate(()=>{ localStorage.clear(); }); await page.reload(); await page.waitForTimeout(500);
+  const T=await start({viewport:{width:1360,height:820}});const page=T.page;const ok=T.ok;
   const G=(fn,...a)=>page.evaluate(fn,...a);
   const box=await page.locator('#stage').boundingBox();
   const W2S=async(x,y)=>{ const v=await G(()=>__FC.S.view); return [box.x+x*v.z+v.px, box.y+y*v.z+v.py]; };
@@ -109,6 +100,5 @@ let fails=0; const ok=(c,m)=>{ if(!c){fails++;console.log('FAIL',m);} else conso
   // mobile
   await page.setViewportSize({width:400,height:760}); await page.waitForTimeout(500);
   await page.click('#bProps'); await page.waitForTimeout(400); await page.screenshot({path:require('os').tmpdir()+'/s_mobile2.png'});
-  console.log('ERRORS',errs.length?errs.join('\n'):'none'); console.log(fails?'FAILS '+fails:'ALL OK');
-  await browser.close();
+  await T.finish();
 })().catch(e=>{console.error('TEST CRASH',e);process.exit(1);});

@@ -46,7 +46,6 @@ const html = before +
   '<script>\n' + editor + '</script>\n';
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
-fs.writeFileSync(path.join(root, 'dist/flashcraft.html'), html);
 // the shipped file: full document with doctype and charset so it renders the same when opened from disk
 const shipped = '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n' + html;
 fs.writeFileSync(path.join(root, 'dist/onionskyn.html'), shipped);
