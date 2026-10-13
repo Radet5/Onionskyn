@@ -65,6 +65,7 @@ npm test
 | `harness` | The shared browser harness: a failed check, page error or console error fails a suite |
 | `smoke2`, `beta` | Broad editor smoke tests, project save and load, the problem report |
 | `roundtrip` | Saving the rich fixture Document with Ctrl+S and reopening it, and opening the golden v2 Project file; nothing may change |
+| `sparse` | Opening sparse, malformed and foreign files: defaults for missing fields, Keyframe repair, the 900 frame maximum, bare Documents, the newer-version warning, rejecting other files |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
 | `ease`, `mask`, `clip`, `symdel` | Easing, masks, clipping, symbols |
