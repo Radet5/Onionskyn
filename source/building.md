@@ -64,12 +64,18 @@ npm test
 | `core`, `flaedge` | Document model, GIF writer, `.fla` import edge cases |
 | `harness` | The shared browser harness: a failed check, page error or console error fails a suite |
 | `smoke2`, `beta` | Broad editor smoke tests, project save and load, the problem report |
+| `roundtrip` | Saving the rich fixture Document with Ctrl+S and reopening it, and opening the golden v2 Project file; nothing may change |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
 | `ease`, `mask`, `clip`, `symdel` | Easing, masks, clipping, symbols |
 | `xss`, `explimit`, `audit1` to `audit3` | Escaping in exports, export limits, long action sequences |
 
-Test fixtures live in `test/fixtures/`.
+Test fixtures live in `test/fixtures/`. Two helpers are there for any suite to use:
+
+- `test/fixture_doc.js`: `richDoc()` returns the rich fixture Document, with every Object kind, both Tween types, a bezier Ease, a Mask layer, nested Symbols, a Sound, frame labels and Keyframe scripts.
+- `test/doc_compare.js`: `diffDocs(a, b, {ignore})` compares two Documents and returns `null`, or a line naming the first field that differs.
+
+`test/fixtures/rich-v2.onionskyn.json` is the fixture as the app saved it in Project file format version 2. It stands in for a user's old file, so never regenerate or edit it: the suite requires it to keep opening to a Document equal to `richDoc()`. When the format version goes up, keep it and its check, and add a golden file for the new version beside it. `WRITE_GOLDEN=1 node test/roundtrip.js` writes the golden file only when it is missing. If you change `richDoc()`, the golden check fails, because the old file does not contain the change; give the new content its own fixture or golden file instead.
 
 ## Notes for contributors
 
