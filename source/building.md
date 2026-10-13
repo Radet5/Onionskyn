@@ -68,6 +68,7 @@ npm test
 | `sparse` | Opening sparse, malformed and foreign files: defaults for missing fields, Keyframe repair, the 900 frame maximum, bare Documents, the newer-version warning, rejecting other files |
 | `persist` | Autosave and reload: the rich fixture Document comes back equal, with every Image and Sound restored from browser storage |
 | `parity` | Export parity: the rich fixture Document at several Frames (Keyframes, mid Tweens, inside a looping Movie clip) drawn by the editor, the exported HTML5 player and the SVG export must match pixel for pixel: no more than 0.05% of pixels may differ by more than 48 in any channel |
+| `pixels` | Rendering held to fixed colours at chosen Stage points, so a Core bug that breaks the editor and every export alike still fails: Motion and Shape tween midpoints, Graphic modes, a Movie clip playing while its parent stands still (in the editor and the player), Group alpha, linear and radial gradients, Text and Images |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
 | `ease`, `mask`, `clip`, `symdel` | Easing, Masks, Symbol instance type and Graphic modes (with undo), Symbols |
@@ -83,7 +84,7 @@ Test fixtures live in `test/fixtures/`. Two helpers are there for any suite to u
 ## Notes for contributors
 
 - Saved settings keep the `flashcraft.*` prefix in `localStorage` (the project's original name), so existing users keep their data.
-- Rendering code is shared by the editor, the exports and the runtime, so a change to how a shape draws needs checking in all three. The `parity` suite compares them for the rich fixture Document. A new Object kind or drawing option is not compared until a Document the suite draws holds it; adding it to `richDoc()` also needs a new golden file (see Tests).
+- Rendering code is shared by the editor, the exports and the runtime, so a change to how a shape draws needs checking in all three. The `parity` suite compares them for the rich fixture Document. The `pixels` suite checks what the editor draws (and the player, for a Movie clip) against fixed colours, which catches a Core change that breaks all three alike. A new Object kind or drawing option is not compared until a Document the `parity` suite draws holds it; adding it to `richDoc()` also needs a new golden file (see Tests).
 - When you add a feature, add a suite for it and list it in `test/all.sh`.
 - Browser suites start with `start()` from `test/audit_lib.js` and end with `await T.finish()`, so a failed `T.ok` check or any page or console error makes the suite exit non-zero. In new or changed test code, wait on a condition (`page.waitForFunction`) rather than a fixed `waitForTimeout`.
 - Run an action that changes the Document through `T.undoable(name, fn)` instead of `T.step`. It requires the action to change the Document and add exactly one history entry, then requires undo to give back the Document from before and redo the Document from after. A `fn` must be one user action, so split a step that does several.
