@@ -1,6 +1,6 @@
 # Building from source
 
-Onionskyn ships as one standalone HTML file, but that file is a build output. The source is split into a few small files in `src/`, and `build.sh` joins them.
+Onionskyn ships as one standalone HTML file, but that file is a build output. The source is split into a few small files in `src/`, and `build.sh` (which runs `build.mjs`) bundles them with esbuild into one file.
 
 ## Layout
 
@@ -14,11 +14,11 @@ Onionskyn ships as one standalone HTML file, but that file is a build output. Th
 | `src/app3.js` | Panels, the Properties tabs, menus, shortcuts, saving and loading |
 | `src/vendor/jszip.min.js` | JSZip, inlined for `.fla` import and project export (see `THIRD-PARTY.md`) |
 
-`app1.js`, `app2.js` and `app3.js` are concatenated into one scope, so they share functions and variables. `core.js` and `runtime.js` are separate scripts. Never write a closing script tag inside a source file, because the build inlines everything into `<script>` blocks.
+`app1.js`, `app2.js` and `app3.js` are joined into one scope, so they share functions and variables, until they are split into real modules. `core.js` and `runtime.js` are bundled as separate scripts because HTML exports embed them (see `docs/adr/0001-esbuild-bundles-with-global-core.md` at the repo root). Never write a closing script tag inside a source file, because the build inlines everything into `<script>` blocks.
 
 ## Build
 
-You need Node.js 18 or newer.
+You need Node.js 18 or newer and `npm install` (for esbuild).
 
 ```bash
 ./build.sh
