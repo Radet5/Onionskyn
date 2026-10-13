@@ -1,10 +1,6 @@
-const {chromium}=require('playwright');const path=require('path');
-let fails=0;const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++;};
-(async()=>{const b=await chromium.launch();const page=await b.newPage({viewport:{width:1300,height:850}});const errs=[];page.on('pageerror',e=>errs.push(e.message));
-await page.addInitScript(()=>{window.__FC_TEST=true;});
-await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));await page.waitForTimeout(500);
-await page.click('#mFile');await page.click('text=New animation');await page.waitForTimeout(150);
-const dlg=await page.$('#modal .primary');if(dlg){await dlg.click();await page.waitForTimeout(150);}
+const {start}=require('./audit_lib');
+(async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;const ok=T.ok;
+await T.newDoc();
 await page.mouse.click(5,5);
 const box=await page.evaluate(()=>{const r=document.querySelector('#stage').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};});
 const cx=box.x+box.w/2,cy=box.y+box.h/2;
@@ -55,14 +51,13 @@ await setSel('#fillType','solid');ok(!(await last()).grad,'solid removes the gra
 // bucket with gradient: closed loop
 await page.keyboard.press('Control+a');await page.keyboard.press('Delete');await page.waitForTimeout(60);
 await page.keyboard.press('y');
-const L=cx-100,R=cx+100,T=cy-70,B=cy+70;
+const left=cx-100,right=cx+100,top=cy-70,bottom=cy+70;
 const line=async(x0,y0,x1,y1)=>{await page.mouse.move(x0,y0);await page.mouse.down();for(let i=1;i<=10;i++){await page.mouse.move(x0+(x1-x0)*i/10,y0+(y1-y0)*i/10);await page.waitForTimeout(5);}await page.mouse.up();await page.waitForTimeout(50);};
-await line(L-4,T,R+4,T);await line(R,T-4,R,B+4);await line(R+4,B,L-4,B);await line(L,B+4,L,T-4);
+await line(left-4,top,right+4,top);await line(right,top-4,right,bottom+4);await line(right+4,bottom,left-4,bottom);await line(left,bottom+4,left,top-4);
 await page.keyboard.press('Escape');await page.keyboard.press('k');
 await setSel('#fillType','radial');
 await page.mouse.click(cx,cy);await page.waitForTimeout(150);
 const bo=await page.evaluate(()=>{const o=window.__FC.S.doc.layers.flatMap(l=>l.kfs.flatMap(k=>k.objs))[0];return {grad:o.grad&&o.grad.type,stops:o.grad&&o.grad.stops.length};});
 await page.mouse.click(cx,cy);await page.keyboard.press('v');await page.mouse.click(cx,cy+30);await page.waitForTimeout(100);
 ok(bo.grad==='radial'&&bo.stops===2,'bucket region fill uses the radial gradient');
-await page.screenshot({path:require('os').tmpdir()+'/g.png'});ok(errs.length===0,'no page errors '+errs.join(';'));
-console.log(fails?'FAILED '+fails:'ALL PASS');await b.close();process.exit(fails?1:0);})();
+await page.screenshot({path:require('os').tmpdir()+'/g.png'});await T.finish();})();

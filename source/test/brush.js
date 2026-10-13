@@ -1,8 +1,6 @@
-const {chromium}=require('playwright');const path=require('path');
+const {start}=require('./audit_lib');
 const SP=require('os').tmpdir();
-(async()=>{const b=await chromium.launch();const page=await b.newPage({viewport:{width:1300,height:850}});const errs=[];page.on('pageerror',e=>errs.push(e.message));
-await page.addInitScript(()=>{window.__FC_TEST=true;});
-await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));await page.waitForTimeout(500);
+(async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;
 const res=await page.evaluate(()=>{
  const F=window.__FC; const out=[];
  const strokes={wiggle:[],loop:[],zig:[]};
@@ -31,4 +29,4 @@ const res=await page.evaluate(()=>{
    result[shape+'/'+nm+(bpress?'/press':'')]=+(diff/tot*100).toFixed(2)+'% n='+cs[0].nodes.length;
   }}
  return result;});
-const imgs=await page.evaluate(()=>window.__imgs);imgs.forEach((u,i)=>require('fs').writeFileSync(require('os').tmpdir()+'/bd'+i+'.png',Buffer.from(u.split(',')[1],'base64')));console.log('errors',errs.join('|')||'none');await b.close();})();
+const imgs=await page.evaluate(()=>window.__imgs);imgs.forEach((u,i)=>require('fs').writeFileSync(require('os').tmpdir()+'/bd'+i+'.png',Buffer.from(u.split(',')[1],'base64')));await T.finish();})();

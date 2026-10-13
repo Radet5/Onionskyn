@@ -24,4 +24,4 @@ await T.step('tabs all',async()=>{for(const t of ['obj','text','align','frame','
 await T.step('help/theme/report',async()=>{await p.click('#bHelp');await p.keyboard.press('Escape');await p.click('#bTheme');await p.click('#bTheme');await p.click('#mFile');await p.locator('button:has-text("Report a problem")').first().click();await p.keyboard.press('Escape');});
 await T.step('code editor open/type/close',async()=>{await p.keyboard.press('F9');await p.keyboard.type('console.log(1)');await p.keyboard.press('Escape');return objs();});
 await T.step('preview open/close',async()=>{await p.click('#bPreview');await p.waitForTimeout(800);await p.click('#prevClose');});
-console.log('FAILS',T.fails);await T.b.close();process.exit(T.fails?1:0);})();
+await T.finish();})();

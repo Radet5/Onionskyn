@@ -62,10 +62,11 @@ npm test
 | Suite | Covers |
 |---|---|
 | `core`, `flaedge` | Document model, GIF writer, `.fla` import edge cases |
+| `harness` | The shared browser harness: a failed check, page error or console error fails a suite |
 | `smoke2`, `beta` | Broad editor smoke tests, project save and load, the problem report |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
-| `ease`, `mask`, `clip`, `sym`, `symdel` | Easing, masks, clipping, symbols |
+| `ease`, `mask`, `clip`, `symdel` | Easing, masks, clipping, symbols |
 | `xss`, `explimit`, `audit1` to `audit3` | Escaping in exports, export limits, long action sequences |
 
 Test fixtures live in `test/fixtures/`.
@@ -75,3 +76,4 @@ Test fixtures live in `test/fixtures/`.
 - Saved settings keep the `flashcraft.*` prefix in `localStorage` (the project's original name), so existing users keep their data.
 - Rendering code is shared by the editor, the exports and the runtime, so a change to how a shape draws needs checking in all three.
 - When you add a feature, add a suite for it and list it in `test/all.sh`.
+- Browser suites start with `start()` from `test/audit_lib.js` and end with `await T.finish()`, so a failed `T.ok` check or any page or console error makes the suite exit non-zero. In new or changed test code, wait on a condition (`page.waitForFunction`) rather than a fixed `waitForTimeout`.

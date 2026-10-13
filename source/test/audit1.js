@@ -29,4 +29,4 @@ await T.step('dropper',async()=>{await p.keyboard.press('i');await T.click(160,1
 await T.step('node tool drag nodes',async()=>{await p.keyboard.press('a');await T.click(160,120);await T.drag(100,80,120,60);await p.keyboard.press('Delete');});
 await T.step('hand+zoom+fit',async()=>{await p.keyboard.press('h');await T.drag(200,200,250,250);for(const k of ['+','-','!'])await p.keyboard.press(k);await p.click('#zIn');await p.click('#zOut');});
 await T.step('Convert F8 (all)',async()=>{await p.keyboard.press('v');await p.keyboard.press('Control+a');await p.keyboard.press('F8');return T.st(()=>Object.keys(window.__FC.S.doc.lib));});
-console.log('FAILS',T.fails);await T.b.close();process.exit(T.fails?1:0);})();
+await T.finish();})();

@@ -1,10 +1,6 @@
-const {chromium}=require('playwright');const path=require('path');
-let fails=0;const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++;};
-(async()=>{const b=await chromium.launch();const page=await b.newPage({viewport:{width:1300,height:850}});const errs=[];page.on('pageerror',e=>errs.push(e.message));
-await page.addInitScript(()=>{window.__FC_TEST=true;});
-await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));await page.waitForTimeout(500);
-await page.click('#mFile');await page.click('text=New animation');await page.waitForTimeout(150);
-const dlg=await page.$('#modal .primary');if(dlg){await dlg.click();await page.waitForTimeout(150);}
+const {start}=require('./audit_lib');
+(async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;const ok=T.ok;
+await T.newDoc();
 await page.mouse.click(5,5);
 const box=await page.evaluate(()=>{const r=document.querySelector('#stage').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};});
 const cx=box.x+box.w/2,cy=box.y+box.h/2;
@@ -12,8 +8,8 @@ const objs=()=>page.evaluate(()=>window.__FC.S.doc.layers.flatMap(l=>l.kfs.flatM
 const line=async(x0,y0,x1,y1)=>{await page.mouse.move(x0,y0);await page.mouse.down();for(let i=1;i<=12;i++){await page.mouse.move(x0+(x1-x0)*i/12,y0+(y1-y0)*i/12);await page.waitForTimeout(5);}await page.mouse.up();await page.waitForTimeout(60);};
 // closed loop of 4 pencil lines (gap-free corners overlap a little)
 await page.keyboard.press('y');
-const L=cx-100,R=cx+100,T=cy-70,B=cy+70;
-await line(L-4,T,R+4,T);await line(R,T-4,R,B+4);await line(R+4,B,L-4,B);await line(L,B+4,L,T-4);
+const left=cx-100,right=cx+100,top=cy-70,bottom=cy+70;
+await line(left-4,top,right+4,top);await line(right,top-4,right,bottom+4);await line(right+4,bottom,left-4,bottom);await line(left,bottom+4,left,top-4);
 const n0=await objs();
 await page.keyboard.press('k');await page.waitForTimeout(80);
 ok(await page.evaluate(()=>getComputedStyle(document.querySelector('#bgap')).display!=='none'&&document.querySelector('#bgap').offsetParent!==null),'gap option visible with bucket');
@@ -29,7 +25,7 @@ ok((await objs())===n0,'open space adds nothing');
 // loop with a gap
 await page.keyboard.press('Control+a');await page.keyboard.press('Delete');await page.waitForTimeout(60);
 await page.keyboard.press('y');
-await line(L-4,T,R+4,T);await line(R,T-4,R,B+4);await line(R+4,B,L-4,B);await line(L,B+4,L,T+40);
+await line(left-4,top,right+4,top);await line(right,top-4,right,bottom+4);await line(right+4,bottom,left-4,bottom);await line(left,bottom+4,left,top+40);
 const n1=await objs();
 await page.keyboard.press('k');
 await page.evaluate(()=>{document.querySelector('#bgap').value='none';document.querySelector('#bgap').dispatchEvent(new Event('change',{bubbles:true}));});
@@ -41,10 +37,9 @@ ok((await objs())===n1,'gap of ~30px is still too big for "large"');
 // small gap
 await page.keyboard.press('Control+a');await page.keyboard.press('Delete');await page.waitForTimeout(60);
 await page.keyboard.press('y');
-await line(L-4,T,R+4,T);await line(R,T-4,R,B+4);await line(R+4,B,L-4,B);await line(L,B+4,L,T+14);
+await line(left-4,top,right+4,top);await line(right,top-4,right,bottom+4);await line(right+4,bottom,left-4,bottom);await line(left,bottom+4,left,top+14);
 const n2=await objs();
 await page.keyboard.press('k');
 await page.mouse.click(cx,cy);await page.waitForTimeout(120);
 ok((await objs())===n2+1,'"large" closes a ~10px gap');
-ok(errs.length===0,'no page errors '+errs.join(';'));
-console.log(fails?'FAILED '+fails:'ALL PASS');await b.close();process.exit(fails?1:0);})();
+await T.finish();})();

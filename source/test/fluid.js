@@ -1,9 +1,6 @@
-const {chromium}=require('playwright');const path=require('path');
+const {start}=require('./audit_lib');
 const SP=require('os').tmpdir();
-let fails=0;const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++;};
-(async()=>{const b=await chromium.launch();const page=await b.newPage({viewport:{width:1300,height:850}});const errs=[];page.on('pageerror',e=>errs.push(e.message));
-await page.addInitScript(()=>{window.__FC_TEST=true;});
-await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));await page.waitForTimeout(500);
+(async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;const ok=T.ok;
 // ---- geometry tests (rasterise outline, measure vertical thickness at x)
 const R=await page.evaluate(()=>{
  const F=window.__FC, out={};
@@ -66,8 +63,7 @@ ok(R.dot>=8,'single click makes a dot ('+R.dot+' nodes), 2 identical pts '+R.dot
 ok(!R.nan,'no NaN/Infinity for extreme settings');
 ok(R.perfMs<400,'6000-point stroke in '+R.perfMs+' ms, '+R.perfNodes+' nodes');
 // ---- UI: key F, tab, drag to draw, undo, presets
-await page.click('#mFile');await page.click('text=New animation');await page.waitForTimeout(150);
-const dlg=await page.$('#modal button.primary, #modal .primary');if(dlg){await dlg.click();await page.waitForTimeout(150);}
+await T.newDoc();
 await page.mouse.click(5,5);
 ok(await page.$eval('#tab-brush',e=>e.hidden||getComputedStyle(e).display==='none'),'Brush tab hidden before choosing the fluid brush');
 await page.evaluate(()=>window.__FC.setTab('doc'));await page.waitForTimeout(50);
@@ -132,6 +128,5 @@ await page.keyboard.press('v');await page.waitForTimeout(100);
 ok(await page.evaluate(()=>window.__FC.S.tab)!=='brush','leaving fluid from the Brush tab switches to another tab');
 // switching tools doesn't throw; classic brush untouched
 await page.keyboard.press('b');await page.keyboard.press('f');await page.keyboard.press('v');
-ok(errs.length===0,'no page errors '+errs.join('|'));
 await page.screenshot({path:SP+'/fluid.png'});
-await b.close();console.log(fails?'FAILURES '+fails:'ALL PASS');process.exit(fails?1:0);})();
+await T.finish();})();

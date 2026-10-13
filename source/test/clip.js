@@ -1,5 +1,5 @@
 const {start}=require('./audit_lib');
-(async()=>{const T=await start();const p=T.page;let bad=0;const ok=(c,m)=>{console.log(c?'ok  ':'FAIL',m);if(!c)bad++;};
+(async()=>{const T=await start();const p=T.page;const ok=T.ok;
 await T.newDoc();
 await T.st(()=>{const F=window.__FC,C=F.C,d=F.S.doc;
  const l=C.mkLayer('L');l.kfs[0].objs=[C.mkPath([C.rectContour(40,40)],{fill:'#ff0000',stroke:null},{x:0,y:0})];const k2=C.mkKf(1);k2.objs=[C.mkPath([C.rectContour(40,40)],{fill:'#0000ff',stroke:null},{x:0,y:0})];l.kfs.push(k2);
@@ -15,4 +15,4 @@ await p.fill('#ifirst','1');await p.waitForTimeout(100);c=await colorAt();ok(c[0
 await p.selectOption('#itype','gr');ok(await T.st(()=>window.__FC.S.doc.layers[0].kfs[0].objs[0].mc===false),'graphic flag');
 await p.keyboard.press('Control+z');await p.keyboard.press('Control+z');await p.keyboard.press('Control+z');
 console.log('undo ok',await T.st(()=>JSON.stringify(window.__FC.S.doc.layers[0].kfs[0].objs[0].mode)));
-ok(T.errs.length===0,'no errors '+T.errs.join('|'));await T.b.close();process.exit(bad?1:0);})();
+await T.finish();})();

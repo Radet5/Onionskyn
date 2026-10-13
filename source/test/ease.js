@@ -1,8 +1,6 @@
-const {chromium}=require('playwright');const path=require('path');
+const {start}=require('./audit_lib');
 const SP=require('os').tmpdir();
-(async()=>{const b=await chromium.launch();const page=await b.newPage({viewport:{width:1300,height:850}});const errs=[];page.on('pageerror',e=>errs.push(e.message));
-await page.addInitScript(()=>{window.__FC_TEST=true;});
-await page.goto('file://'+path.resolve(__dirname,'../dist/flashcraft.html'));await page.waitForTimeout(500);
+(async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;
 // select Ball layer keyframe 0 (motion tween): click timeline cell
 const tl=await page.locator('#tlC, #tl canvas').first().boundingBox();
 const rows=await page.evaluate(()=>{const S=window.__FC.S;return S.doc.layers.map(l=>l.name)});console.log(rows);
@@ -23,4 +21,4 @@ const v=await page.evaluate(()=>{const F=window.__FC,S=F.S;const l=S.doc.layers.
 // undo restores
 await page.keyboard.press('Control+z');console.log('after undo',await page.evaluate(()=>JSON.stringify(window.__FC.C.kfFor(window.__FC.S.doc.layers.find(l=>l.name==='Ball'),0).ease.p)));
 await page.screenshot({path:SP+'/ease-ui.png'});
-console.log('errors',errs.join('|')||'none');await b.close();})();
+await T.finish();})();

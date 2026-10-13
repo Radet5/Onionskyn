@@ -25,4 +25,4 @@ await T.step('open saved project',async()=>{await p.setInputFiles('#fileIn',[SP+
 await T.step('reload persistence',async()=>{await p.waitForTimeout(1000);await p.reload();await p.waitForTimeout(800);return lib()+' '+await T.st(()=>Object.values(window.__FC.S.doc.images).map(i=>!!i.b64).join())+' '+await T.st(()=>Object.values(window.__FC.S.doc.sounds).map(i=>!!i.b64).join());});
 for(const f of ['html','gif','img','seq','vid']){await T.step('export '+f,async()=>{await p.evaluate((f)=>window.__FC.openExport(f),f);await p.waitForTimeout(200);await p.locator('#mFoot').getByRole('button',{name:'Export'}).click();await p.waitForTimeout(2500);const t=await T.st(()=>document.getElementById('mTitle').textContent);await p.keyboard.press('Escape');return t;});}
 await T.step('new doc after all',async()=>{await T.newDoc();return lib()+' '+await cnt();});
-console.log('FAILS',T.fails);await T.b.close();process.exit(T.fails?1:0);})();
+await T.finish();})();
