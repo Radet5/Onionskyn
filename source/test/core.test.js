@@ -1,9 +1,14 @@
 const fs=require('fs'); const path=require('path');
 const {JSDOM}=require('jsdom'); const JSZip=require('jszip');
 globalThis.DOMParser=new JSDOM('').window.DOMParser; globalThis.JSZip=JSZip;
-eval(fs.readFileSync(path.join(__dirname,'../src/core.js'),'utf8'));
+// bundle Core from source the same way build.mjs does, so the suite tests src/core/ and not dist/
+eval(require('esbuild').buildSync({entryPoints:[path.join(__dirname,'../src/core/index.js')],bundle:true,write:false,format:'iife',banner:{js:"'use strict';"},target:'esnext',charset:'utf8',logLevel:'warning'}).outputFiles[0].text);
 const C=globalThis.FCCore; let fails=0;
 const ok=(c,m)=>{ if(!c){fails++;console.log('FAIL',m);} else console.log('ok  ',m); };
+
+// --- the exported API: Runtime and HTML exports depend on this exact key set
+const KEYS=["uid","clamp","lerp","clone","nz","hexToRgb","rgbToHex","lerpHex","rgba","newT","matOf","mmul","minv","mapply","decompose","node","tracePath","pathD","bezPt","splitSeg","contoursBounds","localBounds","worldCorners","worldBounds","recenter","applyMatrixToNodes","setObjMatrix","ellipseContour","rectContour","mkPath","mkLayer","mkKf","mkDoc","normalizeDoc","groupEntries","drawUnits","maskedDraw","groupAlpha","tweenPairs","shapeTweenIssues","ease","bezierEase","morphContours","evalLayerObjs","evalDoc","kfIndexAt","kfAt","kfFor","sortKfs","ensureEditable","insertKeyframe","insertFrames","removeFrames","clearKeyframe","moveKeyframe","setTweenAt","drawObj","hitObj","frameSVG","objSVG","quantize","lzw","gifWriter","parseNum","parseEdges","assembleLoops","importFLA","setImages","preloadImages","setLib","setMeasure","kidsOf","layoutText"];
+ok(JSON.stringify(Object.keys(C))===JSON.stringify(KEYS),'FCCore key set unchanged');
 
 // --- tween eval
 const doc=C.mkDoc(); const L=doc.layers[0];

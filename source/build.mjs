@@ -9,7 +9,13 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const src = (p) => path.join(root, 'src', p);
 const read = (p) => fs.readFileSync(src(p), 'utf8');
 
-const common = { bundle: true, write: false, format: 'iife', target: 'esnext', charset: 'utf8', legalComments: 'inline', logLevel: 'warning' };
+// `import … from '@core'` resolves to a shim over window.FCCore, so Core is never bundled twice (see docs/adr/0001).
+const coreAlias = {
+  name: 'core-alias',
+  setup(b) { b.onResolve({ filter: /^@core$/ }, () => ({ path: src('core-shim.js') })); }
+};
+
+const common = { plugins: [coreAlias], bundle: true, write: false, format: 'iife', target: 'esnext', charset: 'utf8', legalComments: 'inline', logLevel: 'warning' };
 
 async function bundle(opts) {
   const r = await build({ ...common, ...opts });
@@ -20,7 +26,8 @@ async function bundle(opts) {
 const editorSrc = "'use strict';\n" + ['app1.js', 'app2.js', 'app3.js'].map(read).join('\n');
 
 const [core, runtime, editor] = await Promise.all([
-  bundle({ entryPoints: [src('core.js')] }),
+  // ES modules are strict, but esbuild's IIFE output drops that; Core has always run strict
+  bundle({ entryPoints: [src('core/index.js')], banner: { js: "'use strict';" } }),
   bundle({ entryPoints: [src('runtime.js')] }),
   bundle({ stdin: { contents: editorSrc, resolveDir: src('.'), sourcefile: 'editor.js' } })
 ]);

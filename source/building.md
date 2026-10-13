@@ -7,14 +7,35 @@ Onionskyn ships as one standalone HTML file, but that file is a build output. Th
 | File | What it holds |
 |---|---|
 | `src/head.html` | The page markup and all the CSS |
-| `src/core.js` | The document model: layers, keyframes, tweens, shapes, rendering, import and export |
+| `src/core/` | Core, as ES modules: the document model, tweens, shapes, rendering, import and export (table below) |
+| `src/core-shim.js` | What `import … from '@core'` resolves to: `window.FCCore`, so Core is never bundled twice |
 | `src/runtime.js` | The small player that runs exported animations |
 | `src/app1.js` | Editor state, history (undo and redo), stage rendering and overlays |
 | `src/app2.js` | Tools: pen, pencil, brush, fluid brush, paint bucket, selection, gradients |
 | `src/app3.js` | Panels, the Properties tabs, menus, shortcuts, saving and loading |
 | `src/vendor/jszip.min.js` | JSZip, inlined for `.fla` import and project export (see `THIRD-PARTY.md`) |
 
-`app1.js`, `app2.js` and `app3.js` are joined into one scope, so they share functions and variables, until they are split into real modules. `core.js` and `runtime.js` are bundled as separate scripts because HTML exports embed them (see `docs/adr/0001-esbuild-bundles-with-global-core.md` at the repo root). Never write a closing script tag inside a source file, because the build inlines everything into `<script>` blocks.
+`app1.js`, `app2.js` and `app3.js` are joined into one scope, so they share functions and variables, until they are split into real modules. Core (`src/core/index.js`) and `runtime.js` are bundled as separate scripts because HTML exports embed them (see `docs/adr/0001-esbuild-bundles-with-global-core.md` at the repo root). Never write a closing script tag inside a source file, because the build inlines everything into `<script>` blocks.
+
+Core modules in `src/core/`:
+
+| Module | What it holds |
+|---|---|
+| `index.js` | Builds the `FCCore` object and puts it on `window`. Its key set is fixed: Runtime and HTML exports depend on it |
+| `util.js` | `uid`, `clamp`, `lerp`, `clone`, `nz` |
+| `color.js`, `matrix.js` | Hex colours; 2D matrices and Object transforms |
+| `path.js` | Bezier contours: tracing, SVG path data, bounds, splitting |
+| `image.js` | Loaded bitmaps (set with `setImages`) |
+| `mask.js` | Mask layer grouping and the scratch canvases used for masks and group alpha |
+| `text.js` | Text measuring (set with `setMeasure`) and layout |
+| `bounds.js` | Object bounds and baking matrices into Objects |
+| `factories.js` | The document model: `mkDoc`, `mkLayer`, `mkKf`, `mkPath`, `normalizeDoc` |
+| `easing.js`, `morph.js` | Ease curves; Shape tween contour morphing |
+| `timeline-eval.js` | Evaluating a Timeline at a Frame, including Symbol instances (the Library is set with `setLib`) |
+| `keyframe-edit.js` | Inserting, moving and clearing Keyframes and Frames, setting Tweens |
+| `render.js` | Drawing Objects to a canvas and hit testing |
+| `svg.js`, `gif.js` | SVG export; the GIF encoder |
+| `fla-import.js` | `.fla`/XFL import |
 
 ## Build
 
