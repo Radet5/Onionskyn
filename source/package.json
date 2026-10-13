@@ -4,7 +4,10 @@
   "description": "A free, browser-based animation editor in the spirit of Flash / Adobe Animate. Ships as a single HTML file.",
   "license": "MIT",
   "author": "Dylan Papp",
-  "repository": { "type": "git", "url": "https://github.com/papptimus/Onionskyn.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/papptimus/Onionskyn.git"
+  },
   "scripts": {
     "build": "./build.sh",
     "test": "./test/all.sh"
@@ -12,6 +15,6 @@
   "devDependencies": {
     "jsdom": "^29.1.1",
     "jszip": "^3.10.1",
-    "playwright": "^1.50.0"
+    "playwright": "^1.64.0"
   }
 }
