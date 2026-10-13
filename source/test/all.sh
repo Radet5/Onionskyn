@@ -6,4 +6,4 @@ run(){ name=$1; shift; out=$(timeout 280 "$@" 2>&1); code=$?; bad=$(echo "$out" 
 run core node test/core.test.js
 run flaedge node test/flaedge.js
 run harness node test/harness.js
-for t in smoke2 beta roundtrip sparse brush fluid merge bucket gradient ease mask clip symdel xss explimit audit1 audit2 audit3; do run $t node test/$t.js; done
+for t in smoke2 beta roundtrip sparse persist brush fluid merge bucket gradient ease mask clip symdel xss explimit audit1 audit2 audit3; do run $t node test/$t.js; done

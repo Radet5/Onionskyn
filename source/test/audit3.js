@@ -22,7 +22,10 @@ await T.step('image: select/scale/rot/convert to symbol',async()=>{await p.keybo
 await T.step('sound add + assign',async()=>{await p.setInputFiles('#sndIn',[__dirname+'/fixtures/t.wav']);await p.waitForTimeout(300);await T.st(()=>window.__FC.setTab('frame'));await p.selectOption('#kfSound',{index:1}).catch(()=>{});return T.st(()=>JSON.stringify(window.__FC.S.doc.layers[0].kfs[0].sound||null));});
 await T.step('save project download',async()=>{const [dl]=await Promise.all([p.waitForEvent('download',{timeout:4000}),p.keyboard.press('Control+s')]);await dl.saveAs(SP+'/audit.onionskyn.json');return dl.suggestedFilename();});
 await T.step('open saved project',async()=>{await p.setInputFiles('#fileIn',[SP+'/audit.onionskyn.json']);await p.waitForTimeout(500);return lib()+' '+await cnt();});
-await T.step('reload persistence',async()=>{await p.waitForTimeout(1000);await p.reload();await p.waitForTimeout(800);return lib()+' '+await T.st(()=>Object.values(window.__FC.S.doc.images).map(i=>!!i.b64).join())+' '+await T.st(()=>Object.values(window.__FC.S.doc.sounds).map(i=>!!i.b64).join());});
+// the full Document check is in persist.js; here the media imported through the Library must come back too
+await T.step('reload persistence',async()=>{const before=await lib();await p.waitForFunction(()=>(localStorage.getItem('flashcraft.doc.v1')||'').includes('"t.png"'));await p.reload();await p.waitForFunction(()=>!!window.__FC);
+ const back=await p.waitForFunction(()=>{const d=window.__FC.S.doc,m=[...Object.values(d.images),...Object.values(d.sounds)];return m.length>=2&&m.every(i=>i.b64);}).then(()=>true,()=>false);
+ T.ok(back,'every Image and Sound has its data after reload');T.ok(await lib()===before,'reload keeps the Library ('+before+')');return lib();});
 for(const f of ['html','gif','img','seq','vid']){await T.step('export '+f,async()=>{await p.evaluate((f)=>window.__FC.openExport(f),f);await p.waitForTimeout(200);await p.locator('#mFoot').getByRole('button',{name:'Export'}).click();await p.waitForTimeout(2500);const t=await T.st(()=>document.getElementById('mTitle').textContent);await p.keyboard.press('Escape');return t;});}
 await T.step('new doc after all',async()=>{await T.newDoc();return lib()+' '+await cnt();});
 await T.finish();})();

@@ -66,6 +66,7 @@ npm test
 | `smoke2`, `beta` | Broad editor smoke tests, project save and load, the problem report |
 | `roundtrip` | Saving the rich fixture Document with Ctrl+S and reopening it, and opening the golden v2 Project file; nothing may change |
 | `sparse` | Opening sparse, malformed and foreign files: defaults for missing fields, Keyframe repair, the 900 frame maximum, bare Documents, the newer-version warning, rejecting other files |
+| `persist` | Autosave and reload: the rich fixture Document comes back equal, with every Image and Sound restored from browser storage |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
 | `ease`, `mask`, `clip`, `symdel` | Easing, masks, clipping, symbols |
