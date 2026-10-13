@@ -69,6 +69,7 @@ npm test
 | `persist` | Autosave and reload: the rich fixture Document comes back equal, with every Image and Sound restored from browser storage |
 | `parity` | Export parity: the rich fixture Document at several Frames (Keyframes, mid Tweens, inside a looping Movie clip) drawn by the editor, the exported HTML5 player and the SVG export must match pixel for pixel: no more than 0.05% of pixels may differ by more than 48 in any channel |
 | `pixels` | Rendering held to fixed colours at chosen Stage points, so a Core bug that breaks the editor and every export alike still fails: Motion and Shape tween midpoints, Graphic modes, a Movie clip playing while its parent stands still (in the editor and the player), Group alpha, linear and radial gradients, Text and Images |
+| `scripts` | The Runtime's script API in the exported HTML5 player: `stop()`, `gotoAndPlay(label)` and `gotoAndStop(frame)` on the Scene, a named Movie clip stopped or sent to a Frame from the Scene's script, and a script that throws, which is reported while playback and later scripts go on |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
 | `ease`, `mask`, `clip`, `symdel` | Easing, Masks, Symbol instance type and Graphic modes (with undo), Symbols |
