@@ -1,22 +1,30 @@
-const {start}=require('./audit_lib');const fs=require('fs');
-const SP=require('os').tmpdir();
+const {start}=require('./audit_lib');const fs=require('fs');const path=require('path');
+const TMP=require('os').tmpdir(),APP_VERSION=require('../package.json').version;
 (async()=>{const T=await start({viewport:{width:1300,height:850}});const page=T.page;
 const dot=()=>page.evaluate(()=>document.getElementById('mFile').classList.contains('dirty'));
-console.log('dirty at start',await dot());
+const unloadPrevented=()=>page.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented;});
+T.ok(!await dot(),'dirty indicator is off at start');
+T.ok(!await unloadPrevented(),'leaving the page is not blocked while clean');
 await page.keyboard.press('r');const box=await page.locator('#stage').boundingBox();await page.mouse.move(box.x+100,box.y+100);await page.mouse.down();await page.mouse.move(box.x+200,box.y+180,{steps:4});await page.mouse.up();
-console.log('dirty after draw',await dot());
-// beforeunload
-const dlg=[];page.on('dialog',d=>{dlg.push(d.type());d.dismiss();});
-await page.evaluate(()=>{window.__bu=false;});
-const prevented=await page.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented;});console.log('beforeunload prevented',prevented);
-const [d]=await Promise.all([page.waitForEvent('download'),page.keyboard.press('Control+s')]);await d.saveAs(require('os').tmpdir()+'/p.json');
-await page.waitForTimeout(300);console.log('dirty after save',await dot());
-const j=JSON.parse(fs.readFileSync(require('os').tmpdir()+'/p.json','utf8'));console.log('project meta',j.version,j.appVersion,!!j.saved);
-// report modal
-await page.click('#mFile');await page.getByText('Report a problem').click();await page.waitForTimeout(200);
-console.log((await page.inputValue('#rpDiag')).split('\n').slice(0,8).join('\n'));
-await page.screenshot({path:SP+'/report.png'});
-// newer version warning
-j.version=9;fs.writeFileSync(require('os').tmpdir()+'/p9.json',JSON.stringify(j));await page.keyboard.press('Escape');
-await page.setInputFiles('#fileIn',require('os').tmpdir()+'/p9.json');await page.waitForTimeout(400);console.log('toasts',await page.evaluate(()=>[...document.querySelectorAll('#toast div')].map(x=>x.textContent)));
+T.ok(await dot(),'dirty indicator is on after drawing');
+T.ok(await unloadPrevented(),'beforeunload is prevented while dirty');
+const [d]=await Promise.all([page.waitForEvent('download'),page.keyboard.press('Control+s')]);const saved=path.join(TMP,'p.json');await d.saveAs(saved);
+T.ok(await page.waitForFunction(()=>!document.getElementById('mFile').classList.contains('dirty')).then(()=>true,()=>false),'dirty indicator is off after save');
+T.ok(!await unloadPrevented(),'leaving the page is not blocked after save');
+const j=JSON.parse(fs.readFileSync(saved,'utf8'));
+T.ok(Number.isInteger(j.version)&&j.version>=1,'Project file carries a format version ('+j.version+')');
+T.ok(j.appVersion===APP_VERSION,'Project file carries the app version ('+j.appVersion+')');
+T.ok(!isNaN(Date.parse(j.saved)),'Project file carries when it was saved ('+j.saved+')');
+// problem report
+await page.click('#mFile');await page.getByText('Report a problem').click();
+await page.waitForFunction(()=>document.getElementById('rpDiag').value.length>0);
+const diag=await page.inputValue('#rpDiag');
+T.ok(diag.startsWith('Onionskyn '+APP_VERSION+' (project format '+j.version+')'),'problem report names the app and format version: '+diag.split('\n')[0]);
+T.ok(/unsaved no/.test(diag),'problem report shows the saved state');
+await page.keyboard.press('Escape');
+// a Project file from a newer format version opens with a warning
+const newer=path.join(TMP,'p-newer.json');fs.writeFileSync(newer,JSON.stringify({...j,version:j.version+1}));
+await page.setInputFiles('#fileIn',newer);
+const warned=await page.waitForFunction(()=>[...document.querySelectorAll('#toast div')].some(x=>/saved by a newer Onionskyn/.test(x.textContent))).then(()=>true,()=>false);
+T.ok(warned,'opening a newer-version Project file warns about it');
 await T.finish();})();
