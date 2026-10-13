@@ -13,6 +13,12 @@ r=run(`await p.evaluate(()=>console.error('deliberate console error'));await unt
 ok(r.code===1&&/^CONSOLE deliberate console error/m.test(r.out),'console error exits 1 (exit '+r.code+')');
 r=run(`const p2=T.watch(await T.ctx.newPage());await p2.setContent('<script>setTimeout(()=>{throw new Error("second page")})</script>');await until(()=>T.errs.length);`);
 ok(r.code===1&&/PAGEERR second page/.test(r.out),'errors on a watched second page exit 1 (exit '+r.code+')');
+r=run(`await p.keyboard.press('r');await T.undoable('draw',()=>T.drag(100,100,200,160));`);
+ok(r.code===0&&/^ok {3}draw: redo gives back the Document from after/m.test(r.out),'undoable passes an action that undo and redo restore (exit '+r.code+')');
+r=run(`await T.undoable('rename behind history',()=>T.st(()=>{window.__FC.S.doc.name='Changed';}));`);
+ok(r.code===1&&/^FAIL rename behind history: adds one history entry \(added 0\)/m.test(r.out),'undoable fails an action that skips history, naming it (exit '+r.code+')');
+r=run(`await T.undoable('nothing',()=>p.keyboard.press('Shift'));`);
+ok(r.code===1&&/^FAIL nothing: changes the Document/m.test(r.out),'undoable fails an action that changes nothing (exit '+r.code+')');
 r=run(`throw new Error('suite crashed');`);
 ok(r.code!==0,'a crashing suite exits non-zero (exit '+r.code+')');
 process.exit(bad?1:0);

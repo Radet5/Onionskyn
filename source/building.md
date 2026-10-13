@@ -62,15 +62,15 @@ npm test
 | Suite | Covers |
 |---|---|
 | `core`, `flaedge` | Document model, GIF writer, `.fla` import edge cases |
-| `harness` | The shared browser harness: a failed check, page error or console error fails a suite |
+| `harness` | The shared browser harness: a failed check, page error or console error fails a suite, and `T.undoable` catches an action that skips history |
 | `smoke2`, `beta` | Broad editor smoke tests, project save and load, the problem report |
 | `roundtrip` | Saving the rich fixture Document with Ctrl+S and reopening it, and opening the golden v2 Project file; nothing may change |
 | `sparse` | Opening sparse, malformed and foreign files: defaults for missing fields, Keyframe repair, the 900 frame maximum, bare Documents, the newer-version warning, rejecting other files |
 | `persist` | Autosave and reload: the rich fixture Document comes back equal, with every Image and Sound restored from browser storage |
 | `brush`, `fluid`, `merge` | Brush tools, the Fluid Brush and its tab, stroke merging |
 | `bucket`, `gradient` | Region fill, gradient editing and handles |
-| `ease`, `mask`, `clip`, `symdel` | Easing, masks, clipping, symbols |
-| `xss`, `explimit`, `audit1` to `audit3` | Escaping in exports, export limits, long action sequences |
+| `ease`, `mask`, `clip`, `symdel` | Easing, Masks, Symbol instance type and Graphic modes (with undo), Symbols |
+| `xss`, `explimit`, `audit1` to `audit3` | Escaping in exports, export limits, long action sequences where undo and redo must restore each action exactly |
 
 Test fixtures live in `test/fixtures/`. Two helpers are there for any suite to use:
 
@@ -85,3 +85,4 @@ Test fixtures live in `test/fixtures/`. Two helpers are there for any suite to u
 - Rendering code is shared by the editor, the exports and the runtime, so a change to how a shape draws needs checking in all three.
 - When you add a feature, add a suite for it and list it in `test/all.sh`.
 - Browser suites start with `start()` from `test/audit_lib.js` and end with `await T.finish()`, so a failed `T.ok` check or any page or console error makes the suite exit non-zero. In new or changed test code, wait on a condition (`page.waitForFunction`) rather than a fixed `waitForTimeout`.
+- Run an action that changes the Document through `T.undoable(name, fn)` instead of `T.step`. It requires the action to change the Document and add exactly one history entry, then requires undo to give back the Document from before and redo the Document from after. A `fn` must be one user action, so split a step that does several.

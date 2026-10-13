@@ -2105,6 +2105,6 @@ function init() {
   ]); });
   if (restored) toast('Restored your last session. File → Load sample brings back the demo.');
   else toast('Sample loaded. Press Enter to play, then try the Selection tool on the ball.');
-  if (window.__FC_TEST) window.__FC = { renderFrameCanvas, snap, S, C, toggleMask, openExport, buildPlayer, brushOutline, fluidOutline, fbSet, gradPts, w2s, gradDown, refreshProps, setTab, alignSel, distribute, convertToSymbol, renderLibrary, frameAction, setFrame, setTool, importFLAFile, openFile, exportDialog, loadDoc, buildSample };
+  if (window.__FC_TEST) window.__FC = { renderFrameCanvas, snap, H, S, C, toggleMask, openExport, buildPlayer, brushOutline, fluidOutline, fbSet, gradPts, w2s, gradDown, refreshProps, setTab, alignSel, distribute, convertToSymbol, renderLibrary, frameAction, setFrame, setTool, importFLAFile, openFile, exportDialog, loadDoc, buildSample };
 }
 init();
